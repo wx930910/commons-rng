@@ -16,6 +16,9 @@
  */
 package org.apache.commons.rng.core.source32;
 
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,52 +28,40 @@ import org.junit.Test;
  * {@link IntProvider#nextBoolean()}.
  */
 public class IntProviderTest {
-    /**
-     * A simple class to flip the bits in a number as the source for
-     * {@link IntProvider#next()}.
-     */
-    static final class FlipIntProvider extends IntProvider {
-        /** The value. */
-        private int value;
+	public static IntProvider mockIntProvider1(int value) {
+		int[] mockFieldVariableValue = new int[1];
+		IntProvider mockInstance = spy(IntProvider.class);
+		mockFieldVariableValue[0] = ~value;
+		doAnswer((stubInvo) -> {
+			mockFieldVariableValue[0] = ~mockFieldVariableValue[0];
+			return mockFieldVariableValue[0];
+		}).when(mockInstance).next();
+		return mockInstance;
+	}
 
-        /**
-         * @param value the value
-         */
-        FlipIntProvider(int value) {
-            // Flip the bits so the first call to next() returns to the same state
-            this.value = ~value;
-        }
-
-        @Override
-        public int next() {
-            // Flip the bits
-            value = ~value;
-            return value;
-        }
-    }
-
-    /**
-     * This test ensures that the call to {@link IntProvider#nextBoolean()} returns
-     * each of the bits from a call to {@link IntProvider#nextInt()}.
-     *
-     * <p>The order should be from the least-significant bit.
-     */
-    @Test
-    public void testNextBoolean() {
-        for (int i = 0; i < Integer.SIZE; i++) {
-            // Set only a single bit in the source
-            final int value = 1 << i;
-            final IntProvider provider = new FlipIntProvider(value);
-            // Test the result for a single pass over the long
-            for (int j = 0; j < Integer.SIZE; j++) {
-                final boolean expected = i == j;
-                Assert.assertEquals("Pass 1, bit " + j, expected, provider.nextBoolean());
-            }
-            // The second pass should use the opposite bits
-            for (int j = 0; j < Integer.SIZE; j++) {
-                final boolean expected = i != j;
-                Assert.assertEquals("Pass 2, bit " + j, expected, provider.nextBoolean());
-            }
-        }
-    }
+	/**
+	 * This test ensures that the call to {@link IntProvider#nextBoolean()} returns
+	 * each of the bits from a call to {@link IntProvider#nextInt()}.
+	 *
+	 * <p>
+	 * The order should be from the least-significant bit.
+	 */
+	@Test
+	public void testNextBoolean() {
+		for (int i = 0; i < Integer.SIZE; i++) {
+			// Set only a single bit in the source
+			final int value = 1 << i;
+			final IntProvider provider = IntProviderTest.mockIntProvider1(value);
+			// Test the result for a single pass over the long
+			for (int j = 0; j < Integer.SIZE; j++) {
+				final boolean expected = i == j;
+				Assert.assertEquals("Pass 1, bit " + j, expected, provider.nextBoolean());
+			}
+			// The second pass should use the opposite bits
+			for (int j = 0; j < Integer.SIZE; j++) {
+				final boolean expected = i != j;
+				Assert.assertEquals("Pass 2, bit " + j, expected, provider.nextBoolean());
+			}
+		}
+	}
 }

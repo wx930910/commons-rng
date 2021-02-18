@@ -72,6 +72,25 @@
           <rerunFailingTestsCount>1</rerunFailingTestsCount>
         </configuration>
       </plugin>
+<plugin>
+    <groupId>eu.stamp</groupId>
+    <artifactId>pitmp-maven-plugin</artifactId>
+    <version>1.3.7</version>
+    <configuration>
+    	<targetTests>
+    		<param>org.apache.commons.rng.sampling.distribution.MarsagliaTsangWangDiscreteSamplerTest</param>
+    	</targetTests>
+    	<targetClasses>
+    		<param>org.apache.commons.rng.core.source32.IntProvider</param>
+    	</targetClasses>
+    	<outputFormats>
+    		<param>HTML</param>
+    		<param>XML</param>
+    		<param>CSV</param>
+    	</outputFormats>
+        <reportsDirectory>D:\projects\testing_auto_refactoring\Mutation\</reportsDirectory>
+    </configuration>
+</plugin>
     </plugins>
   </build>
 
