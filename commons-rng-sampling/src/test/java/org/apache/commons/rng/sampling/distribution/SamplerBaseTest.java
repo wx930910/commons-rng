@@ -16,64 +16,55 @@
  */
 package org.apache.commons.rng.sampling.distribution;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
+
 import org.apache.commons.rng.UniformRandomProvider;
 import org.apache.commons.rng.simple.RandomSource;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Test for the {@link SamplerBase}. The class is deprecated but is public. The methods
- * should be tested to ensure correct functionality.
+ * Test for the {@link SamplerBase}. The class is deprecated but is public. The
+ * methods should be tested to ensure correct functionality.
  */
 public class SamplerBaseTest {
-    /**
-     * Extends the {@link SamplerBase} to allow access to methods.
-     */
-    @SuppressWarnings("deprecation")
-    private static class SimpleSampler extends SamplerBase {
-        SimpleSampler(UniformRandomProvider rng) {
-            super(rng);
-        }
+	public static SamplerBase mockSamplerBase1(UniformRandomProvider rng) {
+		SamplerBase mockInstance = spy(new SamplerBase(rng));
+		doAnswer((stubInvo) -> {
+			return stubInvo.callRealMethod();
+		}).when(mockInstance).nextDouble();
+		doAnswer((stubInvo) -> {
+			return stubInvo.callRealMethod();
+		}).when(mockInstance).nextLong();
+		doAnswer((stubInvo) -> {
+			return stubInvo.callRealMethod();
+		}).when(mockInstance).nextInt(anyInt());
+		doAnswer((stubInvo) -> {
+			return stubInvo.callRealMethod();
+		}).when(mockInstance).nextInt();
+		return mockInstance;
+	}
 
-        @Override
-        public double nextDouble() {
-            return super.nextDouble();
-        }
+	@Test
+	public void testNextMethods() {
+		final UniformRandomProvider rng1 = RandomSource.create(RandomSource.SPLIT_MIX_64, 0L);
+		final UniformRandomProvider rng2 = RandomSource.create(RandomSource.SPLIT_MIX_64, 0L);
+		final SamplerBase sampler = SamplerBaseTest.mockSamplerBase1(rng2);
+		final int n = 256;
+		for (int i = 0; i < 3; i++) {
+			Assert.assertEquals(rng1.nextDouble(), sampler.nextDouble(), 0);
+			Assert.assertEquals(rng1.nextInt(), sampler.nextInt());
+			Assert.assertEquals(rng1.nextInt(n), sampler.nextInt(n));
+			Assert.assertEquals(rng1.nextLong(), sampler.nextLong());
+		}
+	}
 
-        @Override
-        public int nextInt() {
-            return super.nextInt();
-        }
-
-        @Override
-        public int nextInt(int max) {
-            return super.nextInt(max);
-        }
-
-        @Override
-        public long nextLong() {
-            return super.nextLong();
-        }
-    }
-
-    @Test
-    public void testNextMethods() {
-        final UniformRandomProvider rng1 = RandomSource.create(RandomSource.SPLIT_MIX_64, 0L);
-        final UniformRandomProvider rng2 = RandomSource.create(RandomSource.SPLIT_MIX_64, 0L);
-        final SimpleSampler sampler = new SimpleSampler(rng2);
-        final int n = 256;
-        for (int i = 0; i < 3; i++) {
-            Assert.assertEquals(rng1.nextDouble(), sampler.nextDouble(), 0);
-            Assert.assertEquals(rng1.nextInt(), sampler.nextInt());
-            Assert.assertEquals(rng1.nextInt(n), sampler.nextInt(n));
-            Assert.assertEquals(rng1.nextLong(), sampler.nextLong());
-        }
-    }
-
-    @Test
-    public void testToString() {
-        final UniformRandomProvider rng = RandomSource.create(RandomSource.SPLIT_MIX_64, 0L);
-        final SimpleSampler sampler = new SimpleSampler(rng);
-        Assert.assertTrue(sampler.toString().contains("rng"));
-    }
+	@Test
+	public void testToString() {
+		final UniformRandomProvider rng = RandomSource.create(RandomSource.SPLIT_MIX_64, 0L);
+		final SamplerBase sampler = SamplerBaseTest.mockSamplerBase1(rng);
+		Assert.assertTrue(sampler.toString().contains("rng"));
+	}
 }
